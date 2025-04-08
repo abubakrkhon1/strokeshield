@@ -1,6 +1,6 @@
 export default function Sidebar() {
     return (
-      <div className="h-[calc(100vh-64px)] overflow-y-auto p-4 bg-white w-[400px] border-r shadow-md flex flex-col">
+      <div className="h-[calc(100vh-64px)] overflow-y-auto p-4 bg-white w-[400px] shadow-md flex flex-col">
         <h2 className="text-2xl font-bold text-blue-600 mb-2">🧠 Stroke Detection Guide</h2>
         <p className="text-gray-700 mb-4">
           Follow these simple steps to get the most accurate results:
