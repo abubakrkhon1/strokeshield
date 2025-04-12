@@ -1,9 +1,11 @@
 "use client";
 import { twMerge } from "tailwind-merge";
 import { useState } from "react";
+import { useScanStore } from "@/store/faceScanStore";
 
 export default function FaceDResults() {
   const [showContinue, setShowContinue] = useState(false);
+  const { asymmetry, verdict, canContinue } = useScanStore();
 
   return (
     <div className="flex flex-col">
@@ -12,12 +14,25 @@ export default function FaceDResults() {
 
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Risk Assessment</h3>
-          <div
-            id="risk-indicator"
-            className="px-4 py-2 rounded text-white font-bold text-center bg-gray-500"
-          >
-            Awaiting Analysis
-          </div>
+          {asymmetry ? (
+            <div
+              id="risk-indicator"
+              className={`px-4 py-2 rounded text-white font-bold text-center ${
+                verdict === "Strong asymmetry - YOU ARE LIKELY HAVING A STROKE!"
+                  ? "bg-red-500"
+                  : "bg-gray-500"
+              }`}
+            >
+              {verdict}
+            </div>
+          ) : (
+            <div
+              id="risk-indicator"
+              className="px-4 py-2 rounded text-white font-bold text-center bg-gray-500"
+            >
+              Awaiting Analysis
+            </div>
+          )}
         </div>
 
         <div className="mb-6">
@@ -76,10 +91,12 @@ export default function FaceDResults() {
         </div>
       </div>
       {/* Continue Button */}
-      <div className={twMerge("mt-4 flex justify-end", !showContinue && "hidden")}>
-        <button className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition cursor-pointer">
+      <div
+        className={twMerge("mt-4 flex justify-end", !canContinue && "hidden")}
+      >
+        <a href="/voice-scan" className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition cursor-pointer">
           Continue
-        </button>
+        </a>
       </div>
     </div>
   );

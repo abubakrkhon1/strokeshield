@@ -66,6 +66,8 @@ export async function runDetectionLoop({
   setAsymmetry,
   setIsSmiling,
   setVerdict,
+  asymmetryRef,
+  verdictRef,
 }) {
   if (!videoRef.current || !canvasRef.current || !faceLandmarkerRef.current) {
     requestAnimationFrame(() =>
@@ -77,6 +79,8 @@ export async function runDetectionLoop({
         setAsymmetry,
         setIsSmiling,
         setVerdict,
+        asymmetryRef,
+        verdictRef,
       })
     );
     return;
@@ -94,6 +98,8 @@ export async function runDetectionLoop({
         setAsymmetry,
         setIsSmiling,
         setVerdict,
+        asymmetryRef,
+        verdictRef,
       })
     );
     return;
@@ -148,7 +154,9 @@ export async function runDetectionLoop({
 
     setIsSmiling(isSmiling);
     setAsymmetry(asymmetry);
+    asymmetryRef.current = asymmetry;
     setVerdict(verdict);
+    verdictRef.current = verdict;
   } else {
     console.log("No face detected!");
   }
@@ -162,6 +170,8 @@ export async function runDetectionLoop({
       setAsymmetry,
       setIsSmiling,
       setVerdict,
+      asymmetryRef,
+      verdictRef,
     })
   );
 }

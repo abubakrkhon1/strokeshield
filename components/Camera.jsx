@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import {
-  loadMediaPipe,
-  runDetectionLoop,
-} from "@/utils/cameraScans";
+import { useScanStore } from "@/store/faceScanStore";
+
+import { loadMediaPipe, runDetectionLoop } from "@/utils/cameraScans";
 
 export default function FaceMesh() {
+  const { setScanResults } = useScanStore();
+
   const [cameraActive, setCameraActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,6 +22,13 @@ export default function FaceMesh() {
   const [asymmetry, setAsymmetry] = useState(0);
   const [isSmiling, setIsSmiling] = useState("false");
   const [verdict, setVerdict] = useState("No verdict yet!");
+  const asymmetryRef = useRef(0);
+  const verdictRef = useRef("No verdict yet!");
+
+  const [scanning, setScanning] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+
+  const [screenshot, setScreenshot] = useState(null);
 
   // Loading MediaPipe
   useEffect(() => {
@@ -55,6 +63,8 @@ export default function FaceMesh() {
             setAsymmetry,
             setIsSmiling,
             setVerdict,
+            asymmetryRef,
+            verdictRef,
           });
         };
       }
@@ -80,16 +90,70 @@ export default function FaceMesh() {
     }
   };
 
+  const startScan = async () => {
+    setCountdown(10);
+    setScanning(true);
+
+    await enableCam();
+
+    let seconds = 10;
+    const interval = setInterval(() => {
+      seconds -= 1;
+      setCountdown(seconds);
+      if (seconds === 0) {
+        clearInterval(interval);
+        setScanning(false);
+
+        // Take screenshot BEFORE disabling camera
+        const video = videoRef.current;
+        if (video && video.videoWidth > 0) {
+          try {
+            const captureCanvas = document.createElement("canvas");
+            captureCanvas.width = video.videoWidth;
+            captureCanvas.height = video.videoHeight;
+
+            const ctx = captureCanvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+
+            const imageDataUrl = captureCanvas.toDataURL("image/png");
+            setScreenshot(imageDataUrl);
+            console.log("Screenshot captured successfully");
+          } catch (error) {
+            console.error("Error capturing screenshot:", error);
+          }
+        } else {
+          console.error("Video element not ready for screenshot");
+        }
+
+        setScanResults({
+          asymmetry: asymmetryRef.current,
+          verdict: verdictRef.current,
+          canContinue: true
+        });
+
+        disableCam();
+      }
+    }, 1000);
+  };
+
   return (
     <div className="w-[750px] h-fit bg-white rounded-lg shadow-xl p-4 flex flex-col justify-between relative">
       <div className="relative mb-4">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full h-full rounded bg-gray-100 object-contain"
-        ></video>
+        {screenshot ? (
+          <img
+            src={screenshot}
+            alt="Captured frame"
+            className="w-full h-full rounded object-contain"
+          />
+        ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full rounded bg-gray-100 object-contain"
+          />
+        )}
         <canvas
           ref={canvasRef}
           className="absolute top-0 bottom-0 h-full w-full pointer-events-none"
@@ -98,21 +162,18 @@ export default function FaceMesh() {
 
       {/* Control buttons */}
       <div className="flex gap-4">
-        {cameraActive ? (
+        {!scanning ? (
           <button
-            onClick={disableCam}
-            className="px-4 py-2 rounded font-bold bg-red-600 text-white hover:bg-red-700 transition flex-1"
+            onClick={startScan}
+            className="px-4 py-2 rounded font-bold bg-green-600 text-white hover:bg-green-700 transition w-full mt-2"
+            disabled={isLoading || cameraActive}
           >
-            Stop Face Mesh
+            Scan Face for 10 seconds
           </button>
         ) : (
-          <button
-            onClick={enableCam}
-            className="px-4 py-2 rounded font-bold bg-blue-600 text-white hover:bg-blue-700 transition flex-1"
-            disabled={isLoading}
-          >
-            {isLoading ? "Loading MediaPipe..." : "Start Face Mesh"}
-          </button>
+          <div className="text-center text-sm mt-2 text-gray-600">
+            Scanning... ⏳ {countdown}s remaining
+          </div>
         )}
       </div>
       <div className="pt-4">
