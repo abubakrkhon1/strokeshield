@@ -1,36 +1,15 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+StrokeShield: AI-powered detection when seconds matter By Abubakr and Bekhruz
+StrokeShield is an advanced AI-powered stroke detection platform that combines cutting-edge technologies to provide real-time health monitoring and early warning signs of stroke. By analyzing facial asymmetry, posture anomalies, and speech patterns, the system offers comprehensive stroke risk assessment.
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Key Features
+Real-time Facial Asymmetry Detection: Uses MediaPipe Face Mesh to detect subtle changes in facial symmetry that may indicate stroke.
+Posture Analysis: Monitors shoulder imbalance, head tilt, and body lean to identify potential stroke symptoms.
+Speech Pattern Recognition: Analyzes speech for coherence, slurring, and word-finding difficulties using Web Speech API and Google AI.
+Comprehensive Dashboard: Provides real-time metrics, historical data, and risk assessments in an easy-to-understand interface.
+Technology Stack
+Frontend: HTML, CSS, JavaScript with Tailwind CSS
+Backend: Node.js, Express
+AI/ML: MediaPipe for face and pose recognition, Google Gemini for speech analysis
+Speech Recognition: Web Speech API for real-time transcription
+Disclaimer
+This tool is for educational and screening purposes only and should not be used for medical diagnosis. If you suspect a stroke, call emergency services immediately (911 in the US). Remember the FAST method: Facial drooping, Arm weakness, Speech difficulties, Time to call emergency services.
