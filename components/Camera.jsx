@@ -1,115 +1,43 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import {
+  loadMediaPipe,
+  runDetectionLoop,
+} from "@/utils/cameraScans";
 
 export default function FaceMesh() {
   const [cameraActive, setCameraActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Variables for MediaPipe
   const faceLandmarkerRef = useRef(null);
   const faceLandmarkerClassRef = useRef(null);
 
+  // Camera and face mesh variables
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
+  // Smile scan variables
+  const [asymmetry, setAsymmetry] = useState(0);
+  const [isSmiling, setIsSmiling] = useState("false");
+  const [verdict, setVerdict] = useState("No verdict yet!");
+
+  // Loading MediaPipe
   useEffect(() => {
-    async function loadMediaPipe() {
+    const load = async () => {
       setIsLoading(true);
-      const vision = await import("@mediapipe/tasks-vision");
-
-      const { FaceLandmarker, FilesetResolver } = vision;
-
-      faceLandmarkerClassRef.current = FaceLandmarker;
-
-      const filesetResolver = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-      );
-
-      const faceLandmarker = await FaceLandmarker.createFromOptions(
-        filesetResolver,
-        {
-          baseOptions: {
-            modelAssetPath:
-              "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-            delegate: "GPU",
-          },
-          runningMode: "VIDEO",
-          numFaces: 1,
-        }
-      );
-
-      faceLandmarkerRef.current = faceLandmarker;
+      try {
+        const { faceLandmarkerClass, faceLandmarker } = await loadMediaPipe();
+        faceLandmarkerClassRef.current = faceLandmarkerClass;
+        faceLandmarkerRef.current = faceLandmarker;
+      } catch (err) {
+        console.error("Failed to load MediaPipe:", err);
+      }
       setIsLoading(false);
-    }
+    };
 
-    loadMediaPipe();
+    load();
   }, []);
-
-  const runDetectionLoop = async () => {
-    if (!videoRef.current || !canvasRef.current || !faceLandmarkerRef.current) {
-      requestAnimationFrame(runDetectionLoop);
-      return;
-    }
-
-    const video = videoRef.current;
-
-    if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
-      requestAnimationFrame(runDetectionLoop);
-      return;
-    }
-
-    const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const results = await faceLandmarkerRef.current.detectForVideo(
-      video,
-      performance.now()
-    );
-
-    if (results.faceLandmarks && results.faceLandmarks.length > 0) {
-      const landmarks = results.faceLandmarks[0];
-
-      landmarks.forEach((landmark) => {
-        const x = landmark.x * canvas.width;
-        const y = landmark.y * canvas.height;
-
-        ctx.beginPath();
-        ctx.arc(x, y, 2, 0, 2 * Math.PI);
-        ctx.fillStyle = "blue";
-        ctx.fill();
-      });
-
-      const FaceLandmarkerClass = faceLandmarkerClassRef.current;
-
-      const connections = FaceLandmarkerClass
-        ? FaceLandmarkerClass.FACE_LANDMARKS_TESSELATION
-        : [];
-
-      connections.forEach((connection) => {
-        const start = landmarks[connection.start];
-        const end = landmarks[connection.end];
-
-        const x1 = start.x * canvas.width;
-        const y1 = start.y * canvas.height;
-        const x2 = end.x * canvas.width;
-        const y2 = end.y * canvas.height;
-
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.strokeStyle = "rgb(235, 235, 235)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      });
-    } else {
-      console.log("No face detected!");
-    }
-
-    requestAnimationFrame(runDetectionLoop);
-  };
 
   const enableCam = async () => {
     try {
@@ -119,17 +47,18 @@ export default function FaceMesh() {
         videoRef.current.srcObject = camera;
 
         videoRef.current.onloadedmetadata = () => {
-          console.log(
-            "Video loaded, dimensions:",
-            videoRef.current.videoWidth,
-            videoRef.current.videoHeight
-          );
-
-          if (faceLandmarkerRef.current) {
-            runDetectionLoop();
-          }
+          runDetectionLoop({
+            videoRef,
+            canvasRef,
+            faceLandmarkerRef,
+            faceLandmarkerClassRef,
+            setAsymmetry,
+            setIsSmiling,
+            setVerdict,
+          });
         };
       }
+
       setCameraActive(true);
     } catch (error) {
       console.log("Error accessing camera!");
@@ -193,6 +122,8 @@ export default function FaceMesh() {
             No findings yet. Start detection to analyze facial asymmetry and
             posture.
           </li>
+          <li>Asymmetry: {asymmetry}</li>
+          <li>Verdict: {verdict}</li>
         </ul>
       </div>
     </div>
