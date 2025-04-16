@@ -27,37 +27,35 @@ export async function loadMediaPipe() {
   };
 }
 
-// Face expressions finder function
+// Utility to get specific blendshape score
 export function getBlendshape(name, blendshapes) {
   const match = blendshapes.categories.find((c) => c.categoryName === name);
   return match?.score || 0;
 }
 
-// Smile scan function
+// Smile scan: returns { asymmetry, isSmiling }
 export function smileScan(results) {
-  const smileLeft = getBlendshape("mouthSmileLeft", results.faceBlendshapes[0]);
-  const smileRight = getBlendshape(
-    "mouthSmileRight",
-    results.faceBlendshapes[0]
-  );
+  const blendshapes = results.faceBlendshapes[0];
+  const smileLeft = getBlendshape("mouthSmileLeft", blendshapes);
+  const smileRight = getBlendshape("mouthSmileRight", blendshapes);
 
   const isSmiling = smileLeft > 0.4 && smileRight > 0.4;
   const asymmetry = Math.abs(smileLeft - smileRight);
 
-  let verdict = "Smile not detected or symmetrical.";
-
-  if (asymmetry >= 0.1 && asymmetry <= 0.2) {
-    verdict = "You are fine";
-  } else if (asymmetry >= 0.21 && asymmetry <= 0.3) {
-    verdict = "Noticeable asymmetry - Visiting doctor is recommended!";
-  } else if (asymmetry >= 0.3) {
-    verdict = "Strong asymmetry - YOU ARE LIKELY HAVING A STROKE!";
-  }
-
-  return { isSmiling, asymmetry, verdict };
+  return { isSmiling, asymmetry };
 }
 
-// Face detection function
+// Eyebrow scan: returns { asymmetry }
+export function eyebrowScan(results) {
+  const blendshapes = results.faceBlendshapes[0];
+  const left = getBlendshape("browOuterUpLeft", blendshapes);
+  const right = getBlendshape("browOuterUpRight", blendshapes);
+  const asymmetry = Math.abs(left - right);
+
+  return { asymmetry };
+}
+
+// Continuous detection loop
 export async function runDetectionLoop({
   videoRef,
   canvasRef,
@@ -65,9 +63,8 @@ export async function runDetectionLoop({
   faceLandmarkerClassRef,
   setAsymmetry,
   setIsSmiling,
-  setVerdict,
   asymmetryRef,
-  verdictRef,
+  phase,
 }) {
   if (!videoRef.current || !canvasRef.current || !faceLandmarkerRef.current) {
     requestAnimationFrame(() =>
@@ -78,16 +75,14 @@ export async function runDetectionLoop({
         faceLandmarkerClassRef,
         setAsymmetry,
         setIsSmiling,
-        setVerdict,
         asymmetryRef,
-        verdictRef,
+        phase,
       })
     );
     return;
   }
 
   const video = videoRef.current;
-
   if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
     requestAnimationFrame(() =>
       runDetectionLoop({
@@ -97,9 +92,8 @@ export async function runDetectionLoop({
         faceLandmarkerClassRef,
         setAsymmetry,
         setIsSmiling,
-        setVerdict,
         asymmetryRef,
-        verdictRef,
+        phase,
       })
     );
     return;
@@ -120,6 +114,7 @@ export async function runDetectionLoop({
   if (results.faceLandmarks && results.faceLandmarks.length > 0) {
     const landmarks = results.faceLandmarks[0];
 
+    // Draw points
     landmarks.forEach((landmark) => {
       const x = landmark.x * canvas.width;
       const y = landmark.y * canvas.height;
@@ -133,10 +128,10 @@ export async function runDetectionLoop({
     const FaceLandmarkerClass = faceLandmarkerClassRef.current;
     const connections = FaceLandmarkerClass?.FACE_LANDMARKS_TESSELATION || [];
 
+    // Draw mesh lines
     connections.forEach((connection) => {
       const start = landmarks[connection.start];
       const end = landmarks[connection.end];
-
       const x1 = start.x * canvas.width;
       const y1 = start.y * canvas.height;
       const x2 = end.x * canvas.width;
@@ -150,15 +145,20 @@ export async function runDetectionLoop({
       ctx.stroke();
     });
 
-    const { isSmiling, asymmetry, verdict } = smileScan(results);
+    // Perform expression analysis
+    let result;
 
-    setIsSmiling(isSmiling);
-    setAsymmetry(asymmetry);
-    asymmetryRef.current = asymmetry;
-    setVerdict(verdict);
-    verdictRef.current = verdict;
-  } else {
-    console.log("No face detected!");
+    if (phase === "smile") {
+      result = smileScan(results);
+      setIsSmiling(result.isSmiling);
+    } else if (phase === "eyebrows") {
+      result = eyebrowScan(results);
+    }
+
+    if (result) {
+      setAsymmetry(result.asymmetry);
+      asymmetryRef.current = result.asymmetry;
+    }
   }
 
   requestAnimationFrame(() =>
@@ -169,9 +169,8 @@ export async function runDetectionLoop({
       faceLandmarkerClassRef,
       setAsymmetry,
       setIsSmiling,
-      setVerdict,
       asymmetryRef,
-      verdictRef,
+      phase,
     })
   );
 }

@@ -5,7 +5,19 @@ import { useScanStore } from "@/store/faceScanStore";
 import { loadMediaPipe, runDetectionLoop } from "@/utils/cameraScans";
 
 export default function FaceMesh() {
-  const { setScanResults } = useScanStore();
+  const {
+    setScanResults,
+    setContinueVisible,
+    phase,
+    setScreenshot,
+    screenshot,
+  } = useScanStore();
+
+  const [disabled, setDisabled] = useState(false);
+  const completedPhasesRef = useRef({
+    smile: false,
+    eyebrows: false,
+  });
 
   const [cameraActive, setCameraActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,8 +39,6 @@ export default function FaceMesh() {
 
   const [scanning, setScanning] = useState(false);
   const [countdown, setCountdown] = useState(10);
-
-  const [screenshot, setScreenshot] = useState(null);
 
   // Loading MediaPipe
   useEffect(() => {
@@ -53,6 +63,7 @@ export default function FaceMesh() {
 
       if (videoRef.current) {
         videoRef.current.srcObject = camera;
+        console.log(phase);
 
         videoRef.current.onloadedmetadata = () => {
           runDetectionLoop({
@@ -65,6 +76,7 @@ export default function FaceMesh() {
             setVerdict,
             asymmetryRef,
             verdictRef,
+            phase,
           });
         };
       }
@@ -91,8 +103,11 @@ export default function FaceMesh() {
   };
 
   const startScan = async () => {
+    completedPhasesRef.current[phase] = true;
+    setDisabled(true);
     setCountdown(10);
     setScanning(true);
+    setScreenshot(null); // clear previous screenshot
 
     await enableCam();
 
@@ -104,37 +119,45 @@ export default function FaceMesh() {
         clearInterval(interval);
         setScanning(false);
 
-        // Take screenshot BEFORE disabling camera
         const video = videoRef.current;
         if (video && video.videoWidth > 0) {
-          try {
-            const captureCanvas = document.createElement("canvas");
-            captureCanvas.width = video.videoWidth;
-            captureCanvas.height = video.videoHeight;
+          const captureCanvas = document.createElement("canvas");
+          captureCanvas.width = video.videoWidth;
+          captureCanvas.height = video.videoHeight;
 
-            const ctx = captureCanvas.getContext("2d");
-            ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+          const ctx = captureCanvas.getContext("2d");
+          ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 
-            const imageDataUrl = captureCanvas.toDataURL("image/png");
-            setScreenshot(imageDataUrl);
-            console.log("Screenshot captured successfully");
-          } catch (error) {
-            console.error("Error capturing screenshot:", error);
-          }
-        } else {
-          console.error("Video element not ready for screenshot");
+          const imageDataUrl = captureCanvas.toDataURL("image/png");
+          setScreenshot(imageDataUrl);
         }
 
-        setScanResults({
-          asymmetry: asymmetryRef.current,
-          verdict: verdictRef.current,
-          canContinue: true
-        });
-
         disableCam();
+        setDisabled(true);
+
+        // Save results from refs
+        setScanResults((prev) => ({
+          ...prev,
+          screenshot: screenshot,
+          ...(phase === "smile"
+            ? {
+                asymmetry: asymmetryRef.current,
+              }
+            : {
+                eyebrowAsymmetry: asymmetryRef.current,
+              }),
+        }));
+
+        setContinueVisible(true); // show continue button
       }
     }, 1000);
   };
+
+  useEffect(() => {
+    if (!completedPhasesRef.current[phase]) {
+      setDisabled(false);
+    }
+  }, [phase]);
 
   return (
     <div className="w-[750px] h-fit bg-white rounded-lg shadow-xl p-4 flex flex-col justify-between relative">
@@ -165,10 +188,12 @@ export default function FaceMesh() {
         {!scanning ? (
           <button
             onClick={startScan}
-            className="px-4 py-2 rounded font-bold bg-green-600 text-white hover:bg-green-700 transition w-full mt-2"
-            disabled={isLoading || cameraActive}
+            className="px-4 py-2 rounded font-bold bg-green-600 text-white hover:bg-green-700 transition w-full mt-2 disabled:bg-neutral-300"
+            disabled={isLoading || cameraActive || disabled}
           >
-            Scan Face for 10 seconds
+            {phase === "smile"
+              ? "Scan Face for smile for 10 seconds"
+              : "Scan Face for eyebrows for 10 seconds"}
           </button>
         ) : (
           <div className="text-center text-sm mt-2 text-gray-600">
@@ -179,12 +204,21 @@ export default function FaceMesh() {
       <div className="pt-4">
         <h3 className="text-lg font-semibold mb-2">Key Findings</h3>
         <ul id="findings-list" className="list-disc pl-5">
-          <li>
+          <li className={asymmetry && verdict && `hidden`}>
             No findings yet. Start detection to analyze facial asymmetry and
             posture.
           </li>
-          <li>Asymmetry: {asymmetry}</li>
-          <li>Verdict: {verdict}</li>
+          {phase === "smile" ? (
+            <>
+              <li>Smile Asymmetry: {asymmetry}</li>
+              <li>Verdict: {verdict}</li>
+            </>
+          ) : (
+            <>
+              <li>Eyebrow Asymmetry: {asymmetry}</li>
+              <li>Verdict: {verdict}</li>
+            </>
+          )}
         </ul>
       </div>
     </div>
