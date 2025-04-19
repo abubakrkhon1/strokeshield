@@ -1,4 +1,13 @@
+'use client'
 export default function Header() {
+  const handleClick = async () => {
+    const res = await fetch("/api/auth/logout",{
+      method:"POST",
+    })
+    console.log(res);
+    
+  }
+
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f4f0f0] px-10 py-3">
       <div className="flex items-center pl-10 text-[#181111]">
@@ -34,7 +43,7 @@ export default function Header() {
             FAQ
           </a>
         </div>
-        <a href="/face-scan" className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-[#e61919] text-white text-sm font-bold leading-normal tracking-[0.015em]">
+        <a href="" onClick={handleClick} className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-[#e61919] text-white text-sm font-bold leading-normal tracking-[0.015em]">
           <span className="truncate">Get Started</span>
         </a>
       </div>

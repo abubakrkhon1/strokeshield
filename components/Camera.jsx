@@ -3,14 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { useScanStore } from "@/store/faceScanStore";
 
 import { loadMediaPipe, runDetectionLoop } from "@/utils/cameraScans";
+import { toast } from "sonner";
 
 export default function FaceMesh() {
   const {
     setScanResults,
     setContinueVisible,
     phase,
-    setScreenshot,
-    screenshot,
+    setScreenshotForPhase,
+    screenshots,
   } = useScanStore();
 
   const [disabled, setDisabled] = useState(false);
@@ -107,11 +108,11 @@ export default function FaceMesh() {
     setDisabled(true);
     setCountdown(10);
     setScanning(true);
-    setScreenshot(null); // clear previous screenshot
 
     await enableCam();
 
-    let seconds = 10;
+    let seconds = 5;
+    let imageDataUrl = null;
     const interval = setInterval(() => {
       seconds -= 1;
       setCountdown(seconds);
@@ -128,17 +129,19 @@ export default function FaceMesh() {
           const ctx = captureCanvas.getContext("2d");
           ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 
-          const imageDataUrl = captureCanvas.toDataURL("image/png");
-          setScreenshot(imageDataUrl);
+          imageDataUrl = captureCanvas.toDataURL("image/png");
+          setScreenshotForPhase(phase, imageDataUrl);
         }
 
         disableCam();
         setDisabled(true);
+        toast.success(
+          `${phase === "smile" ? "Smile" : "Eyebrow"} scan completed!`
+        );
 
         // Save results from refs
         setScanResults((prev) => ({
           ...prev,
-          screenshot: screenshot,
           ...(phase === "smile"
             ? {
                 asymmetry: asymmetryRef.current,
@@ -158,14 +161,15 @@ export default function FaceMesh() {
       setDisabled(false);
     }
   }, [phase]);
+  console.log(screenshots);
 
   return (
     <div className="w-[750px] h-fit bg-white rounded-lg shadow-xl p-4 flex flex-col justify-between relative">
       <div className="relative mb-4">
-        {screenshot ? (
+        {screenshots[phase] ? (
           <img
-            src={screenshot}
-            alt="Captured frame"
+            src={screenshots[phase]}
+            alt={`Captured frame - ${phase}`}
             className="w-full h-full rounded object-contain"
           />
         ) : (
@@ -177,6 +181,7 @@ export default function FaceMesh() {
             className="w-full h-full rounded bg-gray-100 object-contain"
           />
         )}
+
         <canvas
           ref={canvasRef}
           className="absolute top-0 bottom-0 h-full w-full pointer-events-none"
@@ -201,25 +206,75 @@ export default function FaceMesh() {
           </div>
         )}
       </div>
-      <div className="pt-4">
-        <h3 className="text-lg font-semibold mb-2">Key Findings</h3>
-        <ul id="findings-list" className="list-disc pl-5">
-          <li className={asymmetry && verdict && `hidden`}>
+      <div className="pt-2">
+        {!scanning && !disabled ? (
+          <h1 className="text-2xl text-gray-700">
             No findings yet. Start detection to analyze facial asymmetry and
             posture.
-          </li>
-          {phase === "smile" ? (
-            <>
-              <li>Smile Asymmetry: {asymmetry}</li>
-              <li>Verdict: {verdict}</li>
-            </>
-          ) : (
-            <>
-              <li>Eyebrow Asymmetry: {asymmetry}</li>
-              <li>Verdict: {verdict}</li>
-            </>
-          )}
-        </ul>
+          </h1>
+        ) : (
+          <>
+            {phase === "smile" ? (
+              <>
+                <h1 className="text-xl mt-4 font-semibold">
+                  😊 Smile Scan Hints
+                </h1>
+                <ul className="list-disc pl-6 text-sm text-gray-700 space-y-1">
+                  <li>
+                    💡 Smile gently like you're taking a passport photo - not
+                    too wide, not too shy.
+                  </li>
+                  <li>💡 Keep your lips relaxed and show a natural smile.</li>
+                  <li>
+                    💡 Avoid moving your head while smiling. Stay still for best
+                    detection.
+                  </li>
+                  <li>
+                    💡 Make sure your full face is visible in the camera frame.
+                  </li>
+                  <li>
+                    💡 Try smiling with your teeth - it helps with muscle
+                    detection!
+                  </li>
+                  <li>
+                    💡 Don't squint or tilt your head - just a straight, natural
+                    smile.
+                  </li>
+                </ul>
+              </>
+            ) : (
+              <>
+                <h1 className="text-xl mt-4 font-semibold">
+                  🤨 Eyebrow Scan Hints
+                </h1>
+                <ul className="list-disc pl-6 text-sm text-gray-700 space-y-1">
+                  <li>
+                    💡 Raise your eyebrows like you’re surprised – both at the
+                    same time.
+                  </li>
+                  <li>
+                    💡 Keep your forehead relaxed except for the eyebrow
+                    movement.
+                  </li>
+                  <li>
+                    💡 Look straight at the camera while raising your eyebrows.
+                  </li>
+                  <li>
+                    💡 Avoid frowning or moving your mouth – just focus on the
+                    eyebrows.
+                  </li>
+                  <li>
+                    💡 Make sure your eyes and eyebrows are clearly visible in
+                    good lighting.
+                  </li>
+                  <li>
+                    💡 Try to lift both eyebrows equally to check for balance.
+                  </li>
+                </ul>
+              </>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

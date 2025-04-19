@@ -14,10 +14,13 @@ export default function FaceDResults() {
   } = useScanStore();
   const router = useRouter();
 
-  // Compute stroke score out of 5 (2 max from each test)
-  const score =
-    (asymmetry >= 0.3 ? 2 : asymmetry >= 0.2 ? 1 : 0) +
-    (eyebrowAsymmetry >= 0.2 ? 2 : eyebrowAsymmetry >= 0.1 ? 1 : 0);
+  const isFinalResult = asymmetry && eyebrowAsymmetry;
+
+  // Stroke score (only if both scans are complete)
+  const score = isFinalResult
+    ? (asymmetry >= 0.3 ? 2 : asymmetry >= 0.2 ? 1 : 0) +
+      (eyebrowAsymmetry >= 0.2 ? 2 : eyebrowAsymmetry >= 0.1 ? 1 : 0)
+    : 0;
 
   const assessment =
     score >= 4
@@ -31,7 +34,7 @@ export default function FaceDResults() {
       ? "eyebrows"
       : asymmetry && eyebrowAsymmetry
       ? "voice"
-      : "null";
+      : null;
 
   const nextButtonLabel =
     nextPhase === "eyebrows"
@@ -57,28 +60,28 @@ export default function FaceDResults() {
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-2">Stroke Risk</h3>
         <div className="px-4 py-2 rounded text-white font-bold text-center bg-gray-700">
-          {asymmetry
+          {isFinalResult
             ? `Score: ${score}/5 – ${assessment}`
-            : "Awaiting results..."}
+            : "Awaiting full results..."}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="metric-card">
-          <div className="metric-label">Smile Asymmetry</div>
-          <div className="metric-value">
-            {asymmetry ? `${(asymmetry * 100).toFixed(1)}%` : "N/A"}
+      {isFinalResult && (
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="metric-card">
+            <div className="metric-label">Smile Asymmetry</div>
+            <div className="metric-value">
+              {(asymmetry * 100).toFixed(1)}%
+            </div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-label">Eyebrow Asymmetry</div>
+            <div className="metric-value">
+              {(eyebrowAsymmetry * 100).toFixed(1)}%
+            </div>
           </div>
         </div>
-        <div className="metric-card">
-          <div className="metric-label">Eyebrow Asymmetry</div>
-          <div className="metric-value">
-            {eyebrowAsymmetry
-              ? `${(eyebrowAsymmetry * 100).toFixed(1)}%`
-              : "N/A"}
-          </div>
-        </div>
-      </div>
+      )}
 
       {screenshot && (
         <div className="mb-4">
@@ -90,7 +93,7 @@ export default function FaceDResults() {
         </div>
       )}
 
-      {showContinue && (
+      {showContinue && nextButtonLabel && (
         <div className="mt-4 flex justify-end">
           <button
             onClick={handleClick}
