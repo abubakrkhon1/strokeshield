@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useScanStore } from "@/store/faceScanStore";
+import { useScanStore } from "@/store/useScanStore";
 
 import { loadMediaPipe, runDetectionLoop } from "@/utils/cameraScans";
 import { toast } from "sonner";
@@ -12,7 +12,10 @@ export default function FaceMesh() {
     phase,
     setScreenshotForPhase,
     screenshots,
+    setStrokeScore,
   } = useScanStore();
+  console.log("screenshots", screenshots);
+  console.log("phase", phase);
 
   const [disabled, setDisabled] = useState(false);
   const completedPhasesRef = useRef({
@@ -161,12 +164,11 @@ export default function FaceMesh() {
       setDisabled(false);
     }
   }, [phase]);
-  console.log(screenshots);
 
   return (
     <div className="w-[750px] h-fit bg-white rounded-lg shadow-xl p-4 flex flex-col justify-between relative">
       <div className="relative mb-4">
-        {screenshots[phase] ? (
+        {screenshots?.[phase] ? (
           <img
             src={screenshots[phase]}
             alt={`Captured frame - ${phase}`}

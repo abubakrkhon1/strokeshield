@@ -1,5 +1,5 @@
 "use client";
-import { useScanStore } from "@/store/faceScanStore";
+import { useScanStore } from "@/store/useScanStore";
 import { useRouter } from "next/navigation";
 
 export default function FaceDResults() {
@@ -11,6 +11,7 @@ export default function FaceDResults() {
     phase,
     setPhase,
     setContinueVisible,
+    setStrokeScore,
   } = useScanStore();
   const router = useRouter();
 
@@ -48,6 +49,7 @@ export default function FaceDResults() {
       setPhase(nextPhase);
       setContinueVisible(false);
     } else {
+      setStrokeScore(score);
       router.push("/voice-scan");
       setContinueVisible(false);
     }
@@ -70,9 +72,7 @@ export default function FaceDResults() {
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="metric-card">
             <div className="metric-label">Smile Asymmetry</div>
-            <div className="metric-value">
-              {(asymmetry * 100).toFixed(1)}%
-            </div>
+            <div className="metric-value">{(asymmetry * 100).toFixed(1)}%</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">Eyebrow Asymmetry</div>

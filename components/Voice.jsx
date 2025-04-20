@@ -1,15 +1,20 @@
 "use client";
+import { useScanStore } from "@/store/useScanStore";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 
 export default function VoiceScanPage() {
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [audioURL, setAudioURL] = useState(null);
+  const [audiourl, setAudiourl] = useState(null);
   const mediaRecorderRef = useRef(null);
+
   const audioChunksRef = useRef([]);
   const transcribedText = useRef(null);
+
   const router = useRouter();
+
+  const { setSpeechAccuracy, setAudioURL } = useScanStore();
 
   const promptText = "Today is a sunny day. I feel great and ready to go.";
 
@@ -45,10 +50,19 @@ export default function VoiceScanPage() {
         });
 
         const data = await res.json();
+
         transcribedText.current = data.text;
         console.log("Transcript:");
+
+        const accuracy = calculateAccuracy(promptText, data.text);
+        console.log("Accuracy:", accuracy + "%");
+
+        setSpeechAccuracy(accuracy);
         setLoading(false);
-        setAudioURL(URL.createObjectURL(audioBlob));
+
+        const url = URL.createObjectURL(audioBlob);
+        setAudiourl(url);
+        setAudioURL(url);
       };
 
       mediaRecorderRef.current.start();
@@ -62,11 +76,23 @@ export default function VoiceScanPage() {
           ?.getTracks()
           .forEach((track) => track.stop());
       }, 5000);
-      console.log(audioURL);
+      console.log(audiourl);
     } catch (err) {
       console.error("Microphone access error:", err);
     }
   };
+
+  function calculateAccuracy(prompt, transcript) {
+    const promptWords = prompt.toLowerCase().split(/\s+/);
+    const transcriptWords = transcript.toLowerCase().split(/\s+/);
+
+    const correctWords = promptWords.filter(
+      (word, i) => word === transcriptWords[i]
+    );
+    const accuracy = (correctWords.length / promptWords.length) * 100;
+
+    return accuracy.toFixed(1); // % score with 1 decimal
+  }
 
   return (
     <div className="flex-1 bg-[#f5f5f5] flex flex-col items-center justify-center px-4 relative">
@@ -104,12 +130,12 @@ export default function VoiceScanPage() {
         )
       )}
 
-      {audioURL && (
+      {audiourl && (
         <div className="mt-6">
           <p className="text-sm text-gray-600 text-center mb-2">
             Recording complete:
           </p>
-          <audio controls src={audioURL} />
+          <audio controls src={audiourl} />
         </div>
       )}
 

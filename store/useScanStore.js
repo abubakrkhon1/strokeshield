@@ -1,20 +1,24 @@
+// useScanStore.js
 import { create } from "zustand";
 
-export const useScanStore = create((set) => ({
+const initialState = {
   asymmetry: 0,
   eyebrowAsymmetry: 0,
   strokeScore: 0,
   phase: "smile",
   showContinue: false,
-  screenshots: {}, // 👈 store screenshots by phase
-  speechAccuracy: 0,
-
+  screenshots: {},
+  speechAccuracy: null,
   transcribedText: "",
   audioURL: "",
+};
+
+export const useScanStore = create((set) => ({
+  ...initialState,
+
   setTranscription: (text) => set({ transcribedText: text }),
   setAudioURL: (url) => set({ audioURL: url }),
-
-  setStrokeScore: (strokeScore) => set(strokeScore),
+  setStrokeScore: (score) => set({ strokeScore: score }),
   setScanResults: (results) => set(results),
   setPhase: (phase) => set({ phase }),
   setContinueVisible: (visible) => set({ showContinue: visible }),
@@ -28,4 +32,7 @@ export const useScanStore = create((set) => ({
     })),
 
   setSpeechAccuracy: (accuracy) => set({ speechAccuracy: accuracy }),
+
+  // 👇 Reset everything to initialState
+  resetStore: () => set(initialState),
 }));
