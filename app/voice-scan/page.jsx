@@ -16,8 +16,6 @@ export default function Home() {
           <div className="flex flex-1 gap-4">
             {/* Camera Section */}
             <Voice />
-            {/* Results Section */}
-            <FaceDResults />
           </div>
         </div>
       </div>
