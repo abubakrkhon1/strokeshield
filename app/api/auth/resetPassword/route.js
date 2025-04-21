@@ -16,7 +16,7 @@ export async function POST(req) {
   if (!password)
     return NextResponse.json({ message: "User found!", status: 200 });
 
-  const hashedPassword = bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   await db
     .collection("users")

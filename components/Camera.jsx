@@ -61,7 +61,16 @@ export default function FaceMesh() {
 
   const enableCam = async () => {
     try {
-      const camera = await navigator.mediaDevices.getUserMedia({ video: true });
+      const constraints = {
+        video: {
+          facingMode: "user", // front-facing camera
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      };
+
+      const camera = await navigator.mediaDevices.getUserMedia(constraints);
 
       if (videoRef.current) {
         videoRef.current.srcObject = camera;
