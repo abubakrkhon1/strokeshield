@@ -1,20 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 
-const Login = () => {
+const ForgotPassword = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [status, setStatus] = useState();
   const [loading, setLoading] = useState(false);
+  const [userFound, setUserFound] = useState(false);
 
   const router = useRouter();
-
-  const setUser = useUserStore((state) => state.setUser);
-  const user = useUserStore((state) => state.setUser);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,22 +19,24 @@ const Login = () => {
     setLoading(true);
     setStatus();
 
-    const res = await fetch("/api/auth/login", {
+    const res = await fetch("/api/auth/resetPassword", {
       method: "POST",
       body: JSON.stringify(form),
     });
 
     const data = await res.json();
 
-    if (data.status === 401) {
-      setStatus(data.message);
-      setLoading(false);
+    if (data.status === 200 && !userFound) {
+      setUserFound(true);
+      setStatus("User found! Please enter new password.");
+    } else if (data.status === 200 && userFound) {
+      setStatus("✅ Password updated successfully. You can now log in.");
+      router.push("/login");
     } else {
-      setUser(data);
-      setLoading(false);
-
-      router.push("/face-scan");
+      setStatus("❌ " + data.message);
     }
+
+    setLoading(false);
   };
 
   return (
@@ -45,14 +44,20 @@ const Login = () => {
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-[#93AEC5] py-6 px-8 text-center">
-          <h2 className="text-3xl font-bold text-white">Welcome Back</h2>
+          <h2 className="text-3xl font-bold text-white">Reset your password</h2>
           <p className="text-sm text-white mt-1">
-            Please sign in to your account
+            Reset your password with ease
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          {/* Status */}
+          {status && (
+            <p className="text-center text-sm text-blue-600 font-semibold">
+              {status}
+            </p>
+          )}
           {/* Email */}
           <div>
             <label
@@ -72,25 +77,21 @@ const Login = () => {
             />
           </div>
 
-          {/* Password */}
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#93AEC5] focus:ring-2 focus:ring-[#93AEC5]/30 outline-none transition-all"
-              required
-              placeholder="••••••••"
-            />
-            {status && <p className="text-sm text-red-500 mt-2">{status}</p>}
-          </div>
+          {userFound && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                New Password
+              </label>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#93AEC5] focus:ring-2 focus:ring-[#93AEC5]/30 outline-none transition-all"
+                required
+                placeholder="New password"
+              />
+            </div>
+          )}
 
           {/* Submit Button */}
           <button
@@ -101,25 +102,24 @@ const Login = () => {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Signing in...
+                Finding your account...
               </span>
+            ) : userFound ? (
+              "Update password"
             ) : (
-              "Sign In"
+              "Find your account"
             )}
           </button>
 
           {/* Footer Links */}
           <div className="text-center space-y-4 text-sm">
-            <a href="/forgot-password" className="text-[#93AEC5] hover:underline block">
-              Forgot your password?
-            </a>
             <p className="text-gray-600">
-              Don't have an account?{" "}
+              Already have an account?{" "}
               <Link
-                href="/signup"
+                href="/login"
                 className="text-[#93AEC5] font-semibold hover:underline"
               >
-                Sign Up
+                Login
               </Link>
             </p>
           </div>
@@ -129,4 +129,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ForgotPassword;
