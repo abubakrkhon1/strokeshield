@@ -14,8 +14,6 @@ export default function FaceMesh() {
     screenshots,
     setStrokeScore,
   } = useScanStore();
-  console.log("screenshots", screenshots);
-  console.log("phase", phase);
 
   const [disabled, setDisabled] = useState(false);
   const completedPhasesRef = useRef({
@@ -166,7 +164,7 @@ export default function FaceMesh() {
   }, [phase]);
 
   return (
-    <div className="w-[750px] h-fit bg-white rounded-lg shadow-xl p-4 flex flex-col justify-between relative">
+    <div className="w-fit h-fit bg-white rounded-lg shadow-xl p-4 flex flex-col justify-between relative">
       <div className="relative mb-4">
         {screenshots?.[phase] ? (
           <img

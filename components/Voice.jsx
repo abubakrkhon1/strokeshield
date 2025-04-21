@@ -52,10 +52,8 @@ export default function VoiceScanPage() {
         const data = await res.json();
 
         transcribedText.current = data.text;
-        console.log("Transcript:");
 
         const accuracy = calculateAccuracy(promptText, data.text);
-        console.log("Accuracy:", accuracy + "%");
 
         setSpeechAccuracy(accuracy);
         setLoading(false);
@@ -76,7 +74,6 @@ export default function VoiceScanPage() {
           ?.getTracks()
           .forEach((track) => track.stop());
       }, 5000);
-      console.log(audiourl);
     } catch (err) {
       console.error("Microphone access error:", err);
     }

@@ -56,7 +56,7 @@ export default function FaceDResults() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 w-[500px] h-fit">
+    <div className="bg-white rounded-lg shadow-lg p-4 w-fit md:w-[500px] h-fit">
       <h2 className="text-xl font-bold mb-4">Detection Results</h2>
 
       <div className="mb-6">
