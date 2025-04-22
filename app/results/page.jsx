@@ -13,7 +13,7 @@ export default function Home() {
     screenshots,
     audioURL,
     strokeScore,
-    reset,
+    resetStore,
   } = useScanStore();
   const router = useRouter();
 
