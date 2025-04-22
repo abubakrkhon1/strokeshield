@@ -51,7 +51,7 @@ export default function Header() {
         </a>
         <a
           href="/profile"
-          className="flex max-w-[84px] cursor-pointer items-center justify-center rounded-full h-10 px-4 bg-[#e61919] text-white text-sm font-bold hover:bg-red-500 transition"
+          className="flex max-w-[84px] cursor-pointer items-center justify-center rounded-full h-10 px-4 bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition"
         >
           <span className="truncate">{user?.user?.name[0]?.toUpperCase()}</span>
         </a>

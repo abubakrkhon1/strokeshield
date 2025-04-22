@@ -24,7 +24,7 @@ export default function Home() {
             <p className="text-gray-700 text-base md:text-lg">
               Our app offers a non-invasive, swift assessment for identifying stroke risks early. Using facial and vocal analysis, we empower users with proactive health insights.
             </p>
-            <a href="/face-scan" className="bg-[#e61919] text-white px-6 py-3 rounded-full font-semibold text-sm md:text-base hover:bg-red-700 transition">
+            <a href="/face-scan" className="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold text-sm md:text-base hover:bg-blue-700 transition">
               Begin Assessment
             </a>
           </div>

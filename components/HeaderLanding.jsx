@@ -9,10 +9,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu } from "lucide-react"; // Icon for dropdown trigger
+import { Menu } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { user, loading, error } = useUser();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.refresh();
+  };
 
   return (
     <header className="flex items-center justify-between border-b border-[#f4f0f0] px-4 md:px-10 py-3">
@@ -38,7 +45,7 @@ export default function Header() {
         {user ? (
           <a
             href="/profile"
-            className="flex items-center justify-center rounded-full h-10 px-4 bg-[#e61919] text-white text-sm font-bold hover:bg-red-500 transition"
+            className="flex items-center justify-center rounded-full h-10 px-4 bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition"
           >
             <span className="truncate">
               {user?.user?.name[0]?.toUpperCase()}
@@ -47,7 +54,7 @@ export default function Header() {
         ) : (
           <a
             href="/login"
-            className="flex items-center justify-center rounded-full h-10 px-4 bg-[#e61919] text-white text-sm font-bold hover:bg-red-500 transition"
+            className="flex items-center justify-center rounded-full h-10 px-4 bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition"
           >
             Get Started
           </a>
@@ -72,9 +79,14 @@ export default function Header() {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {user ? (
-              <DropdownMenuItem asChild>
-                <a href="/profile">Go to Profile</a>
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem asChild>
+                  <a href="/profile">Go to Profile</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="#" onClick={handleLogout}>Logout</a>
+                </DropdownMenuItem>
+              </>
             ) : (
               <DropdownMenuItem asChild>
                 <a href="/login">Get Started</a>

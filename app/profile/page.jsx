@@ -29,7 +29,7 @@ export default function ProfilePage() {
     <div className="flex flex-col min-h-screen">
       <HeaderScan />
       <main className="flex flex-1 items-center justify-center p-6">
-        <div className="w-full bg-white rounded-2xl shadow-xl p-8 space-y-6">
+        <div className="w-fit bg-white rounded-2xl shadow-xl p-8 space-y-6">
           <div className="flex items-center gap-6">
             <div className="flex items-center justify-center w-20 h-20 md:w-20 md:h-20 rounded-full bg-gray-400 text-white text-3xl md:text-3xl font-bold">
               {initial}
