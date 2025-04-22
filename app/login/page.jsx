@@ -45,10 +45,10 @@ const Login = () => {
   };
 
   return (
-    <div className="w-screen h-screen bg-[#D8E3EB] flex items-center justify-center px-4">
+    <div className="w-screen h-screen flex items-center justify-center px-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="bg-[#93AEC5] py-6 px-8 text-center">
+        <div className="bg-blue-600 py-6 px-8 text-center">
           <h2 className="text-3xl font-bold text-white">Welcome Back</h2>
           <p className="text-sm text-white mt-1">
             Please sign in to your account
@@ -104,7 +104,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#93AEC5] hover:bg-[#829cb3] text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition disabled:bg-gray-400"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition disabled:bg-gray-400"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -120,7 +120,7 @@ const Login = () => {
           <div className="text-center space-y-4 text-sm">
             <a
               href="/forgot-password"
-              className="text-[#93AEC5] hover:underline block"
+              className="text-blue-600 hover:underline block"
             >
               Forgot your password?
             </a>
@@ -128,7 +128,7 @@ const Login = () => {
               Don't have an account?{" "}
               <Link
                 href="/signup"
-                className="text-[#93AEC5] font-semibold hover:underline"
+                className="text-blue-600 font-semibold hover:underline"
               >
                 Sign Up
               </Link>

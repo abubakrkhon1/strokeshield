@@ -34,10 +34,10 @@ const SignUp = () => {
   };
 
   return (
-    <div className="w-screen h-screen bg-[#D8E3EB] flex items-center justify-center px-4">
+    <div className="w-screen h-screen  flex items-center justify-center px-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="bg-[#93AEC5] py-6 px-8 text-center">
+        <div className="bg-blue-600 py-6 px-8 text-center">
           <h2 className="text-3xl font-bold text-white">Sign Up</h2>
           <p className="text-white mt-1 text-sm">
             Join us and get started today
@@ -108,7 +108,7 @@ const SignUp = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#93AEC5] hover:bg-[#7b9cb3] text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition disabled:bg-gray-400"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition disabled:bg-gray-400"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -125,7 +125,7 @@ const SignUp = () => {
             Already have an account?{" "}
             <Link
               href="/login"
-              className="text-[#93AEC5] font-semibold hover:underline"
+              className="text-blue-600 font-semibold hover:underline"
             >
               Sign in
             </Link>
