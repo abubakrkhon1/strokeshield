@@ -33,6 +33,7 @@ const Login = () => {
       setStatus(data.message);
       setLoading(false);
     } else {
+      setStatus(data.message);
       setUser(data);
       setLoading(false);
 
@@ -53,6 +54,7 @@ const Login = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          {status && <h1>{status}</h1>}
           {/* Email */}
           <div>
             <label
@@ -110,7 +112,10 @@ const Login = () => {
 
           {/* Footer Links */}
           <div className="text-center space-y-4 text-sm">
-            <a href="/forgot-password" className="text-[#93AEC5] hover:underline block">
+            <a
+              href="/forgot-password"
+              className="text-[#93AEC5] hover:underline block"
+            >
               Forgot your password?
             </a>
             <p className="text-gray-600">
