@@ -32,6 +32,9 @@ const Login = () => {
     if (data.status === 401) {
       setStatus(data.message);
       setLoading(false);
+    } else if (data.status === 404) {
+      setStatus(data.message);
+      setLoading(false);
     } else {
       setStatus(data.message);
       setUser(data);
@@ -54,7 +57,6 @@ const Login = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          {status && <h1>{status}</h1>}
           {/* Email */}
           <div>
             <label
@@ -91,7 +93,11 @@ const Login = () => {
               required
               placeholder="••••••••"
             />
-            {status && <p className="text-sm text-red-500 mt-2">{status}</p>}
+            {status !== "Login successful" ? (
+              <p className="text-sm text-red-500 mt-2">{status}</p>
+            ) : (
+              <p className="text-sm text-green-500 mt-2">{status}</p>
+            )}
           </div>
 
           {/* Submit Button */}
